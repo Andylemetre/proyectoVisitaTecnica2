@@ -1,0 +1,89 @@
+-- Base de datos para Sistema de Gestión de Visitas Técnicas
+
+CREATE DATABASE
+IF NOT EXISTS sistema_visitas;
+USE sistema_visitas;
+
+-- Tabla de técnicos
+CREATE TABLE tecnicos (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR
+(100) NOT NULL,
+    apellido VARCHAR
+(100) NOT NULL,
+    telefono VARCHAR
+(20),
+    email VARCHAR
+(100) UNIQUE,
+    especialidad VARCHAR
+(100),
+    activo BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabla de clientes
+CREATE TABLE clientes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR
+(100) NOT NULL,
+    apellido VARCHAR
+(100) NOT NULL,
+    empresa VARCHAR
+(150),
+    telefono VARCHAR
+(20) NOT NULL,
+    email VARCHAR
+(100),
+    direccion TEXT NOT NULL,
+    ciudad VARCHAR
+(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabla de visitas
+CREATE TABLE visitas (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    tecnico_id INT NOT NULL,
+    cliente_id INT NOT NULL,
+    fecha_visita DATE NOT NULL,
+    hora_inicio TIME NOT NULL,
+    hora_fin TIME NOT NULL,
+    tipo_servicio VARCHAR
+(100) NOT NULL,
+    descripcion TEXT,
+    estado ENUM
+('programada', 'en_progreso', 'completada', 'cancelada') DEFAULT 'programada',
+    notas TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON
+UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY
+(tecnico_id) REFERENCES tecnicos
+(id),
+    FOREIGN KEY
+(cliente_id) REFERENCES clientes
+(id),
+    INDEX idx_fecha
+(fecha_visita),
+    INDEX idx_tecnico_fecha
+(tecnico_id, fecha_visita),
+    INDEX idx_estado
+(estado)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Datos de ejemplo
+INSERT INTO tecnicos
+    (nombre, apellido, telefono, email, especialidad)
+VALUES
+    ('Juan', 'Pérez', '+56912345678', 'juan.perez@ejemplo.cl', 'Electricidad'),
+    ('María', 'González', '+56987654321', 'maria.gonzalez@ejemplo.cl', 'Fontanería'),
+    ('Carlos', 'Rodríguez', '+56923456789', 'carlos.rodriguez@ejemplo.cl', 'Climatización'),
+    ('Ana', 'Martínez', '+56934567890', 'ana.martinez@ejemplo.cl', 'Electricidad');
+
+INSERT INTO clientes
+    (nombre, apellido, empresa, telefono, email, direccion, ciudad)
+VALUES
+    ('Roberto', 'Silva', 'Empresa ABC', '+56945678901', 'roberto@abc.cl', 'Av. Principal 123', 'Santiago'),
+    ('Laura', 'Torres', 'Comercial XYZ', '+56956789012', 'laura@xyz.cl', 'Calle Central 456', 'Santiago'),
+    ('Diego', 'Morales', NULL, '+56967890123', 'diego@email.cl', 'Pasaje Norte 789', 'Providencia'),
+    ('Sofía', 'Vargas', 'Servicios LMN', '+56978901234', 'sofia@lmn.cl', 'Av. Sur 321', 'Las Condes');
