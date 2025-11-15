@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEMO - Sistema de Gestión de Visitas Técnicas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6881f3 0%, #547be6 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .demo-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ffc107;
+            color: #212529;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6881f3 0%, #547be6 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .week-navigation {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #3757e6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #101d66;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #3b98e9;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #024274;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+
+        .current-week {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .stats-container {
+            padding: 20px 30px;
+            background: #fff;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.highlight {
+            background: linear-gradient(135deg, #6881f3 0%, #547be6 100%);
+            color: white;
+            border: none;
+        }
+
+        .stat-name {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .calendar {
+            padding: 10px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: 100px repeat(7, 1fr);
+            gap: 1px;
+        }
+
+        .time-label {
+            text-align: right;
+            padding-right: 10px;
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .day-header {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #6881f3 0%, #547be6 100%);
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .day-date {
+            font-size: 0.85em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .time-slot {
+            min-height: 80px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-slot:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .visit-card {
+            background: linear-gradient(135deg, #6881f3 0%, #547be6 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #ffd700;
+        }
+
+        .visit-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .visit-card:hover .visit-actions {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .visit-card.cancelada {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            opacity: 0.7;
+        }
+
+        .visit-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 3px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .visit-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .visit-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .visit-tecnico {
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 3px;
+        }
+
+        .visit-cliente {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        .visit-hora {
+            font-size: 0.75em;
+            opacity: 0.8;
+            margin-top: 3px;
+        }
+
+        .table-container {
+            padding: 30px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .table thead {
+            background: linear-gradient(135deg, #6881f3 0%, #547be6 100%);
+            color: white;
+        }
+
+        .table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .close-btn:hover {
+            color: #dc3545;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            min-width: 300px;
+            max-width: 400px;
+            border-left: 4px solid #28a745;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.error {
+            border-left-color: #dc3545;
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .notification.success .notification-icon {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .notification.error .notification-icon {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .notification-message {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="demo-badge">🎭 MODO DEMO</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📋 Sistema de Gestión de Visitas Técnicas</h1>
+            <p>Organiza y controla las visitas de tu equipo técnico</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="cambiarTab('calendario')">📅 Calendario</button>
+            <button class="nav-tab" onclick="cambiarTab('tecnicos')">👨‍🔧 Técnicos</button>
+            <button class="nav-tab" onclick="cambiarTab('clientes')">👥 Clientes</button>
+        </div>
+
+        <!-- TAB CALENDARIO -->
+        <div id="tab-calendario" class="tab-content active">
+            <div class="controls">
+                <div class="week-navigation">
+                    <button class="btn btn-secondary" onclick="mostrarDemo()">← Semana Anterior</button>
+                    <span class="current-week">11 nov - 17 nov, 2024</span>
+                    <button class="btn btn-secondary" onclick="mostrarDemo()">Semana Siguiente →</button>
+                </div>
+                <button class="btn btn-success" onclick="abrirModal('visitaModal')">+ Nueva Visita</button>
+            </div>
+
+            <div class="stats-container">
+                <h3 style="margin-bottom: 15px; color: #495057;">📊 Estadísticas de Técnicos - Semana Actual</h3>
+                <div class="stats-grid">
+                    <div class="stat-card highlight">
+                        <div class="stat-name">Juan Pérez</div>
+                        <div class="stat-value">8 visitas</div>
+                        <div class="stat-name" style="margin-top: 5px;">✓ 5 | 📅 3</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-name">María González</div>
+                        <div class="stat-value">6 visitas</div>
+                        <div class="stat-name" style="margin-top: 5px;">✓ 4 | 📅 2</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-name">Carlos Rodríguez</div>
+                        <div class="stat-value">5 visitas</div>
+                        <div class="stat-name" style="margin-top: 5px;">✓ 3 | 📅 2</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calendar">
+                <div class="calendar-grid">
+                    <div></div>
+                    <div class="day-header">Lunes<div class="day-date">11 nov</div>
+                    </div>
+                    <div class="day-header">Martes<div class="day-date">12 nov</div>
+                    </div>
+                    <div class="day-header">Miércoles<div class="day-date">13 nov</div>
+                    </div>
+                    <div class="day-header">Jueves<div class="day-date">14 nov</div>
+                    </div>
+                    <div class="day-header">Viernes<div class="day-date">15 nov</div>
+                    </div>
+                    <div class="day-header">Sábado<div class="day-date">16 nov</div>
+                    </div>
+                    <div class="day-header">Domingo<div class="day-date">17 nov</div>
+                    </div>
+
+                    <div class="time-label">8:00</div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()">
+                        <div class="visit-card" onclick="event.stopPropagation(); mostrarDemo()">
+                            <div class="visit-actions">
+                                <button class="visit-btn" onclick="event.stopPropagation(); mostrarDemo()"
+                                    title="Editar">✏️</button>
+                                <button class="visit-btn" onclick="event.stopPropagation(); mostrarDemo()"
+                                    title="Cancelar">❌</button>
+                            </div>
+                            <div class="visit-tecnico">👤 Juan Pérez</div>
+                            <div class="visit-cliente">🏢 Empresa ABC</div>
+                            <div class="visit-hora">🕐 8:00 - 10:00</div>
+                            <div style="font-size: 0.75em; margin-top: 3px; opacity: 0.8;">Mantenimiento</div>
+                        </div>
+                    </div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+
+                    <div class="time-label">9:00</div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()">
+                        <div class="visit-card" onclick="event.stopPropagation(); mostrarDemo()">
+                            <div class="visit-actions">
+                                <button class="visit-btn" onclick="event.stopPropagation(); mostrarDemo()">✏️</button>
+                                <button class="visit-btn" onclick="event.stopPropagation(); mostrarDemo()">❌</button>
+                            </div>
+                            <div class="visit-tecnico">👤 María González</div>
+                            <div class="visit-cliente">🏢 Tech Solutions</div>
+                            <div class="visit-hora">🕐 9:00 - 11:00</div>
+                            <div style="font-size: 0.75em; margin-top: 3px; opacity: 0.8;">Instalación</div>
+                        </div>
+                    </div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+
+                    <div class="time-label">10:00</div>
+                    <div class="time-slot" onclick="mostrarDemo()">
+                        <div class="visit-card cancelada" onclick="event.stopPropagation(); mostrarDemo()">
+                            <div class="visit-actions">
+                                <button class="visit-btn" onclick="event.stopPropagation(); mostrarDemo()"
+                                    title="Eliminar">🗑️</button>
+                            </div>
+                            <div class="visit-tecnico">👤 Carlos Rodríguez</div>
+                            <div class="visit-cliente">🏢 Industrias XYZ</div>
+                            <div class="visit-hora">🕐 10:00 - 12:00</div>
+                            <div style="font-size: 0.75em; margin-top: 3px; opacity: 0.8;">Reparación (Cancelada)</div>
+                        </div>
+                    </div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+
+                    <div class="time-label">11:00</div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+
+                    <div class="time-label">12:00</div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+
+                    <div class="time-label">13:00</div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()">
+                        <div class="visit-card" onclick="event.stopPropagation(); mostrarDemo()">
+                            <div class="visit-actions">
+                                <button class="visit-btn" onclick="event.stopPropagation(); mostrarDemo()">✏️</button>
+                                <button class="visit-btn" onclick="event.stopPropagation(); mostrarDemo()">❌</button>
+                            </div>
+                            <div class="visit-tecnico">👤 Juan Pérez</div>
+                            <div class="visit-cliente">🏢 Corporativo 2000</div>
+                            <div class="visit-hora">🕐 13:00 - 15:00</div>
+                            <div style="font-size: 0.75em; margin-top: 3px; opacity: 0.8;">Inspección</div>
+                        </div>
+                    </div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                    <div class="time-slot" onclick="mostrarDemo()"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB TÉCNICOS -->
+        <div id="tab-tecnicos" class="tab-content">
+            <div class="table-container">
+                <div class="controls" style="border: none; padding: 0 0 20px 0;">
+                    <h2 style="color: #495057;">👨‍🔧 Gestión de Técnicos</h2>
+                    <button class="btn btn-success" onclick="abrirModal('tecnicoModal')">+ Nuevo Técnico</button>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Especialidad</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Juan Pérez</td>
+                            <td>+56 9 1234 5678</td>
+                            <td>juan@email.com</td>
+                            <td>Electricidad</td>
+                            <td><span class="badge badge-success">Activo</span></td>
+                            <td class="action-buttons">
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="abrirModal('tecnicoModal')">Editar</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>María González</td>
+                            <td>+56 9 8765 4321</td>
+                            <td>maria@email.com</td>
+                            <td>Fontanería</td>
+                            <td><span class="badge badge-success">Activo</span></td>
+                            <td class="action-buttons">
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="abrirModal('tecnicoModal')">Editar</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Carlos Rodríguez</td>
+                            <td>+56 9 5555 6666</td>
+                            <td>carlos@email.com</td>
+                            <td>Climatización</td>
+                            <td><span class="badge badge-success">Activo</span></td>
+                            <td class="action-buttons">
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="abrirModal('tecnicoModal')">Editar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB CLIENTES -->
+        <div id="tab-clientes" class="tab-content">
+            <div class="table-container">
+                <div class="controls" style="border: none; padding: 0 0 20px 0;">
+                    <h2 style="color: #495057;">👥 Gestión de Clientes</h2>
+                    <button class="btn btn-success" onclick="abrirModal('clienteModal')">+ Nuevo Cliente</button>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Empresa</th>
+                            <th>Teléfono</th>
+                            <th>Ciudad</th>
+                            <th>Visitas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Pedro Martínez</td>
+                            <td>Empresa ABC</td>
+                            <td>+56 9 1111 2222</td>
+                            <td>Santiago</td>
+                            <td>12</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="abrirModal('clienteModal')">Editar</button>
+                                <button class="btn btn-danger btn-sm" onclick="mostrarDemo()">Eliminar</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Ana Silva</td>
+                            <td>Tech Solutions</td>
+                            <td>+56 9 3333 4444</td>
+                            <td>Valparaíso</td>
+                            <td>8</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="abrirModal('clienteModal')">Editar</button>
+                                <button class="btn btn-danger btn-sm" onclick="mostrarDemo()">Eliminar</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Roberto Díaz</td>
+                            <td>Industrias XYZ</td>
+                            <td>+56 9 7777 8888</td>
+                            <td>Concepción</td>
+                            <td>15</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="abrirModal('clienteModal')">Editar</button>
+                                <button class="btn btn-danger btn-sm" onclick="mostrarDemo()">Eliminar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nueva/Editar Visita -->
+    <div class="modal" id="visitaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nueva Visita</h2>
+                <button class="close-btn" onclick="cerrarModal('visitaModal')">&times;</button>
+            </div>
+
+            <form onsubmit="event.preventDefault(); mostrarDemo()">
+                <div class="form-group">
+                    <label for="tecnicoId">Técnico *</label>
+                    <select class="form-control" id="tecnicoId" required>
+                        <option value="">Seleccione un técnico</option>
+                        <option value="1">Juan Pérez - Electricidad</option>
+                        <option value="2">María González - Fontanería</option>
+                        <option value="3">Carlos Rodríguez - Climatización</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="clienteId">Cliente *</label>
+                    <select class="form-control" id="clienteId" required>
+                        <option value="">Seleccione un cliente</option>
+                        <option value="1">Pedro Martínez (Empresa ABC)</option>
+                        <option value="2">Ana Silva (Tech Solutions)</option>
+                        <option value="3">Roberto Díaz (Industrias XYZ)</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fechaVisita">Fecha *</label>
+                        <input type="date" class="form-control" id="fechaVisita" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipoServicio">Tipo de Servicio *</label>
+                        <select class="form-control" id="tipoServicio" required>
+                            <option value="">Seleccione tipo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Reparación">Reparación</option>
+                            <option value="Instalación">Instalación</option>
+                            <option value="Inspección">Inspección</option>
+                            <option value="Emergencia">Emergencia</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="horaInicio">Hora Inicio *</label>
+                        <input type="time" class="form-control" id="horaInicio" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="horaFin">Hora Fin *</label>
+                        <input type="time" class="form-control" id="horaFin" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <textarea class="form-control" id="descripcion" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="notas">Notas</label>
+                    <textarea class="form-control" id="notas" rows="2"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="cerrarModal('visitaModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Técnico -->
+    <div class="modal" id="tecnicoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nuevo Técnico</h2>
+                <button class="close-btn" onclick="cerrarModal('tecnicoModal')">&times;</button>
+            </div>
+
+            <form onsubmit="event.preventDefault(); mostrarDemo()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tecnicoNombre">Nombre *</label>
+                        <input type="text" class="form-control" id="tecnicoNombre" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tecnicoApellido">Apellido *</label>
+                        <input type="text" class="form-control" id="tecnicoApellido" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tecnicoTelefono">Teléfono *</label>
+                        <input type="tel" class="form-control" id="tecnicoTelefono" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tecnicoEmail">Email *</label>
+                        <input type="email" class="form-control" id="tecnicoEmail" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tecnicoEspecialidad">Especialidad *</label>
+                    <select class="form-control" id="tecnicoEspecialidad" required>
+                        <option value="">Seleccione especialidad</option>
+                        <option value="Electricidad">Electricidad</option>
+                        <option value="Fontanería">Fontanería</option>
+                        <option value="Climatización">Climatización</option>
+                        <option value="Refrigeración">Refrigeración</option>
+                        <option value="Carpintería">Carpintería</option>
+                        <option value="Pintura">Pintura</option>
+                        <option value="General">General</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="cerrarModal('tecnicoModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Cliente -->
+    <div class="modal" id="clienteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nuevo Cliente</h2>
+                <button class="close-btn" onclick="cerrarModal('clienteModal')">&times;</button>
+            </div>
+
+            <form onsubmit="event.preventDefault(); mostrarDemo()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="clienteNombre">Nombre *</label>
+                        <input type="text" class="form-control" id="clienteNombre" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clienteApellido">Apellido *</label>
+                        <input type="text" class="form-control" id="clienteApellido" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="clienteEmpresa">Empresa</label>
+                    <input type="text" class="form-control" id="clienteEmpresa">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="clienteTelefono">Teléfono *</label>
+                        <input type="tel" class="form-control" id="clienteTelefono" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clienteEmail">Email</label>
+                        <input type="email" class="form-control" id="clienteEmail">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="clienteDireccion">Dirección *</label>
+                    <textarea class="form-control" id="clienteDireccion" rows="2" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="clienteCiudad">Ciudad</label>
+                    <input type="text" class="form-control" id="clienteCiudad">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="cerrarModal('clienteModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'calendario';
+
+        // Cambiar entre tabs
+        function cambiarTab(tab) {
+            currentTab = tab;
+
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        // Abrir modal
+        function abrirModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            mostrarNotificacion('Modo Demo', 'Esta es una versión de demostración. Los cambios no se guardarán.', 'success');
+        }
+
+        // Cerrar modal
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Mostrar notificación demo
+        function mostrarDemo() {
+            mostrarNotificacion('Modo Demo', 'Esta es una versión de demostración para visualizar la interfaz. Las funcionalidades reales requieren conexión a base de datos.', 'success');
+        }
+
+        // Sistema de notificaciones
+        function mostrarNotificacion(titulo, mensaje, tipo = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${tipo}`;
+
+            const iconSymbol = tipo === 'success' ? '✓' : '✕';
+
+            notification.innerHTML = `
+                <div class="notification-header">
+                    <div class="notification-icon">${iconSymbol}</div>
+                    <div class="notification-title">${titulo}</div>
+                </div>
+                <div class="notification-message">${mensaje}</div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // Cerrar modales con tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+
+        // Mensaje de bienvenida
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                mostrarNotificacion(
+                    '🎭 Bienvenido al Modo Demo',
+                    'Explora la interfaz y prueba todos los botones. Esta es solo una demostración visual.',
+                    'success'
+                );
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>
